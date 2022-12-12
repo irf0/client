@@ -1,0 +1,27 @@
+#dpLabel::-webkit-file-upload-button {
+        visibility: hidden;
+}
+#dpLabel::before{
+content: "+";
+font-size: 40px;
+display: flex;
+justify-content: center;
+align-items: center;
+margin-top: 0.9rem;
+
+}
+#dpLabel{
+    background-image: url("https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg");
+    background-position: center;
+    background-size: contain;
+    /* background-color: #6ee995; */
+    color: rgb(17, 156, 86);
+    padding: 0.5rem;
+    font-family: sans-serif;
+    border-radius: 50%;
+    width: 100px;
+    height: 100px;
+    cursor: pointer;
+    margin-top: 1rem;
+    /* margin-left: 25vw; */
+}
