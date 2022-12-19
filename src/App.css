@@ -14,3 +14,17 @@
     background-repeat: no-repeat;
 
 }
+
+::-webkit-scrollbar{
+    width: 0px;
+}
+::-webkit-scrollbar-thumb{
+background: green;
+}
+::-webkit-scrollbar-thumb:hover{
+    background: #555
+}
+.dark{
+    background-color: black;
+    color: white;
+  }

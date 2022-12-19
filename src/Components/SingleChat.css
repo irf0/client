@@ -1,0 +1,9 @@
+.ChatUI{
+    background-image: url('../images.jpg');
+}
+.message{
+    display: flex;
+    flex-direction: column;
+    overflow-y: scroll;
+    scrollbar-width: none;
+}

@@ -15,8 +15,8 @@ import { useNavigate } from "react-router-dom";
 
 //UseStates
 const Login = () => {
-  const [email, setEmail] = useState();
-  const [password, setPassword] = useState();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [show, setShow] = useState(false); //Showing password
   const [loading, setLoading] = useState(false);
   const toast = useToast();
@@ -61,9 +61,9 @@ const Login = () => {
       setLoading(false);
       navigate("/chats");
     } catch (error) {
+      console.log(error);
       toast({
         title: "Unfortunately some error occured",
-        // description: error.response.data.message,
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -107,6 +107,9 @@ const Login = () => {
         style={{ marginTop: 15 }}
         onClick={submitHandler}
         isLoading={loading}
+        onDoubleClick={() => {
+          setLoading(false);
+        }}
       >
         Login
       </Button>

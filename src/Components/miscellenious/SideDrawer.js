@@ -16,6 +16,8 @@ import {
   DrawerBody,
   Input,
   useToast,
+  CloseButton,
+  Spinner,
 } from "@chakra-ui/react";
 import { BellIcon, ChevronDownIcon } from "@chakra-ui/icons";
 import React, { useState } from "react";
@@ -24,13 +26,24 @@ import ProfileModal from "./ProfileModal";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import ChatLoading from "../ChatLoading";
+import UserListItem from "../UserAvatar/UserListItem";
+import { getSender } from "../../config/ChatLogics";
+import { Effect } from "react-notification-badge";
+import NotificationBadge from "react-notification-badge";
 
 const SideDrawer = () => {
   const [search, setSearch] = useState("");
   const [searchResult, setSearchResult] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingChat, setLoadingChat] = useState();
-  const { user } = ChatState();
+  const {
+    user,
+    setSelectedChat,
+    chats,
+    setChats,
+    notification,
+    setNotification,
+  } = ChatState();
   const navigate = useNavigate();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
@@ -41,18 +54,19 @@ const SideDrawer = () => {
     navigate("/");
   };
 
-  //Handle empty search
+  //Handle input search
   const handleSearch = async () => {
     if (!search) {
       toast({
         title: "Enter something to search",
-        description: "Atleast have this much of common sense",
+        description: "Enter something to search",
         status: "warning",
         duration: 5000,
         isClosable: true,
         position: "top-left",
       });
     }
+
     //API call for searching the user
     try {
       setLoading(true);
@@ -65,12 +79,47 @@ const SideDrawer = () => {
         `http://localhost:5000/api/user/?search=${search}`,
         config
       );
+      console.log(data);
       setLoading(false);
       setSearchResult(data);
     } catch (error) {
       toast({
         title: "Error Occured",
         description: "Failed to load the requested query",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
+    }
+  };
+
+  //Searching groups
+
+  //Access(Showing) the searched chats
+  const accessChat = async (userId) => {
+    try {
+      setLoading(true);
+      const config = {
+        headers: {
+          "Content-type": "application/json",
+          Authorization: `Bearer ${user.token}`,
+        },
+      };
+      const { data } = await axios.post(
+        `http://localhost:5000/api/chats`,
+        { userId },
+        config
+      );
+      if (!chats.find((c) => c._id === data._id)) setChats([data, ...chats]);
+      setSelectedChat(data);
+      setLoadingChat(false);
+      onClose();
+    } catch (error) {
+      console.log(error);
+      toast({
+        title: "Error Loading Chats",
+        description: error.messsage,
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -86,7 +135,8 @@ const SideDrawer = () => {
         display="flex"
         justifyContent="space-between"
         alignItems="center"
-        bg="#C6F6D5"
+        // bg="#C6F6D5"
+        bg="white"
         w="100%"
         p="5px 10px 5px 10px"
         borderWidth="5px"
@@ -115,9 +165,28 @@ const SideDrawer = () => {
         <div>
           <Menu>
             <MenuButton>
+              <NotificationBadge
+                count={notification.length}
+                effect={Effect.SCALE}
+              />
               <BellIcon fontSize="2xl" marginRight="16px" />
             </MenuButton>
-            {/* <MenuList></MenuList> */}
+            <MenuList pl={8}>
+              {!notification.length && "No New Messages!"}
+              {notification.map((notif) => (
+                <MenuItem
+                  key={notif._id}
+                  onClick={() => {
+                    setSelectedChat(notif.chat);
+                    setNotification(notification.filter((n) => n !== notif));
+                  }}
+                >
+                  {notif.chat.isGroupChat
+                    ? `New Message in ${notif.chat.chatName}`
+                    : `New Message from ${getSender(user, notif.chat.users)}`}
+                </MenuItem>
+              ))}
+            </MenuList>
           </Menu>
 
           {/* Profile dropdown menu⤵ */}
@@ -155,11 +224,18 @@ const SideDrawer = () => {
               <Button backgroundColor="green.200" onClick={handleSearch}>
                 Go
               </Button>
+              <CloseButton
+                fontSize="16px"
+                mt={1}
+                ml={3}
+                _hover={{ bg: "#DC143C" }}
+                onClick={() => onClose()}
+              />
             </Box>
             {loading ? (
               <ChatLoading />
             ) : (
-              searchResult?.map((user) => (
+              searchResult?.map((user, chat) => (
                 <UserListItem
                   key={user._id}
                   user={user}
@@ -167,6 +243,7 @@ const SideDrawer = () => {
                 />
               ))
             )}
+            {loadingChat && <Spinner ml="auto" display="flex" />}
           </DrawerBody>
         </DrawerContent>
       </Drawer>
